@@ -825,11 +825,12 @@ public class ClassWriter {
         continue;
       }
 
-      if (javaType.equals("String") && options.doHiveDropDelims()) {
-          sb.append("    // special case for strings hive, dropping delimiters "
-              + "\\n,\\r,\\01 from strings\n");
+      if (javaType.equals("String") && options.getHiveDelimsReplacement() != null) {
+          sb.append("    // special case for strings hive, replacing delimiters "
+              + "\\n,\\r,\\01 with '" + options.getHiveDelimsReplacement()
+              + "' from strings\n");
           sb.append("    __sb.append(FieldFormatter.hiveStringDropDelims("
-              + stringExpr + ", delimiters));\n");
+              + stringExpr + ", \"" + options.getHiveDelimsReplacement() + "\", delimiters));\n");
       } else {
         sb.append("    __sb.append(FieldFormatter.escapeAndEnclose("
             + stringExpr + ", delimiters));\n");

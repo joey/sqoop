@@ -97,6 +97,7 @@ public abstract class BaseSqoopTool extends SqoopTool {
   public static final String HIVE_TABLE_ARG = "hive-table";
   public static final String HIVE_OVERWRITE_ARG = "hive-overwrite";
   public static final String HIVE_DROP_DELIMS_ARG = "hive-drop-import-delims";
+  public static final String HIVE_DELIMS_REPLACEMENT_ARG = "hive-delims-replacement";
   public static final String HIVE_PARTITION_KEY_ARG = "hive-partition-key";
   public static final String HIVE_PARTITION_VALUE_ARG = "hive-partition-value";
   public static final String CREATE_HIVE_TABLE_ARG =
@@ -425,6 +426,12 @@ public abstract class BaseSqoopTool extends SqoopTool {
             + "(\\n\\r) from imported string fields")
         .withLongOpt(HIVE_DROP_DELIMS_ARG)
         .create());
+    hiveOpts.addOption(OptionBuilder
+        .hasArg()
+        .withDescription("Replace Hive record \\0x01 and row delimiters "
+            + "(\\n\\r) from imported string fields with user-defined string")
+        .withLongOpt(HIVE_DELIMS_REPLACEMENT_ARG)
+        .create());
     hiveOpts.addOption(OptionBuilder.withArgName("partition-key")
         .hasArg()
         .withDescription("Sets the partition key to use when importing to hive")
@@ -726,6 +733,10 @@ public abstract class BaseSqoopTool extends SqoopTool {
 
     if (in.hasOption(HIVE_DROP_DELIMS_ARG)) {
       out.setHiveDropDelims(true);
+    }
+
+    if (in.hasOption(HIVE_DELIMS_REPLACEMENT_ARG)) {
+      out.setHiveDelimsReplacement(in.getOptionValue(HIVE_DELIMS_REPLACEMENT_ARG));
     }
 
     if (in.hasOption(HIVE_PARTITION_KEY_ARG)) {
