@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.conf.Configuration;
 import com.cloudera.sqoop.SqoopOptions;
+import com.cloudera.sqoop.io.CodecMap;
 import com.cloudera.sqoop.manager.ConnManager;
 import com.cloudera.sqoop.util.Executor;
 import com.cloudera.sqoop.util.ExitSecurityException;
@@ -191,11 +192,14 @@ public class HiveImport {
     String loadDataStmtStr = tableWriter.getLoadDataStmt() + ";\n";
 
     if (!isGenerateOnly()) {
-    String codec = options.getCompressionCodec();
-      if (codec != null && codec.equals("com.hadoop.compression.lzo.LzopCodec")) {
+      String codec = options.getCompressionCodec();
+      if (codec != null && (codec.equals(CodecMap.LZOP)
+              || codec.equals(CodecMap.getCodecClassName(CodecMap.LZOP)))) {
         try {
           String finalPathStr = tableWriter.getFinalPathStr();
-          Tool tool = ReflectionUtils.newInstance(Class.forName("com.hadoop.compression.lzo.DistributedLzoIndexer").asSubclass(Tool.class), configuration);
+          Tool tool = ReflectionUtils.newInstance(Class.
+                  forName("com.hadoop.compression.lzo.DistributedLzoIndexer").
+                  asSubclass(Tool.class), configuration);
           ToolRunner.run(configuration, tool, new String[] { finalPathStr });
         } catch (Exception ex) {
           LOG.error("Error indexing lzo files", ex);

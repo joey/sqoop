@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import com.cloudera.sqoop.SqoopOptions;
+import com.cloudera.sqoop.io.CodecMap;
 import com.cloudera.sqoop.manager.ConnManager;
 
 import java.io.File;
@@ -178,9 +179,12 @@ public class TableDefWriter {
     sb.append("' LINES TERMINATED BY '");
     sb.append(getHiveOctalCharCode((int) options.getOutputRecordDelim()));
     String codec = options.getCompressionCodec();
-    if (codec != null && codec.equals("com.hadoop.compression.lzo.LzopCodec")) {
-      sb.append("' STORED AS INPUTFORMAT 'com.hadoop.mapred.DeprecatedLzoTextInputFormat'");
-      sb.append(" OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'");
+    if (codec != null && (codec.equals(CodecMap.LZOP)
+            || codec.equals(CodecMap.getCodecClassName(CodecMap.LZOP)))) {
+      sb.append("' STORED AS INPUTFORMAT "
+              + "'com.hadoop.mapred.DeprecatedLzoTextInputFormat'");
+      sb.append(" OUTPUTFORMAT "
+              + "'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'");
     } else {
       sb.append("' STORED AS TEXTFILE");
     }

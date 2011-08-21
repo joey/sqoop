@@ -110,7 +110,7 @@ public class TestTableDefWriter extends TestCase {
   public void testLzoSplitting() throws Exception {
     String[] args = {
         "--compress",
-        "--compression-codec", "com.hadoop.compression.lzo.LzopCodec",
+        "--compression-codec", "lzop",
     };
     Configuration conf = new Configuration();
     SqoopOptions options =
@@ -130,6 +130,8 @@ public class TestTableDefWriter extends TestCase {
         + "ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\054' "
         + "LINES TERMINATED BY '\\012' STORED AS "
         + "INPUTFORMAT 'com.hadoop.mapred.DeprecatedLzoTextInputFormat' "
-        + "OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'", createTable);
+        + "OUTPUTFORMAT "
+        + "'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'",
+        createTable);
   }
 }
