@@ -32,6 +32,7 @@ import org.apache.hadoop.fs.Path;
 import org.junit.Test;
 
 import com.cloudera.sqoop.SqoopOptions;
+import com.cloudera.sqoop.SqoopOptions.InvalidOptionsException;
 import com.cloudera.sqoop.testutil.CommonArgs;
 import com.cloudera.sqoop.testutil.HsqldbTestServer;
 import com.cloudera.sqoop.testutil.ImportJobTestCase;
@@ -40,6 +41,7 @@ import com.cloudera.sqoop.tool.CodeGenTool;
 import com.cloudera.sqoop.tool.CreateHiveTableTool;
 import com.cloudera.sqoop.tool.ImportTool;
 import com.cloudera.sqoop.tool.SqoopTool;
+import org.apache.commons.cli.ParseException;
 
 /**
  * Test HiveImport capability after an import to HDFS.
@@ -367,16 +369,18 @@ public class TestHiveImport extends ImportJobTestCase {
     InterruptedException {
     final String TABLE_NAME = "FIELD_WITH_NL_REPLACEMENT_HIVE_IMPORT";
 
-    LOG.info("Doing import of single row into FIELD_WITH_NL_REPLACEMENT_HIVE_IMPORT table");
+    LOG.info("Doing import of single row into "
+        + "FIELD_WITH_NL_REPLACEMENT_HIVE_IMPORT table");
     setCurTableName(TABLE_NAME);
     setNumCols(3);
     String[] types = { "VARCHAR(32)", "INTEGER", "CHAR(64)" };
     String[] vals = { "'test with\nnew lines\n'", "42",
         "'oh no " + '\01' + " field delims " + '\01' + "'", };
-    String[] moreArgs = { "--"+ BaseSqoopTool.HIVE_DELIMS_REPLACEMENT_ARG, " "};
+    String[] moreArgs = { "--"+BaseSqoopTool.HIVE_DELIMS_REPLACEMENT_ARG, " "};
 
-    runImportTest(TABLE_NAME, types, vals, "fieldWithNewlineReplacementImport.q",
-        getArgv(false, moreArgs), new ImportTool());
+    runImportTest(TABLE_NAME, types, vals,
+        "fieldWithNewlineReplacementImport.q", getArgv(false, moreArgs),
+        new ImportTool());
 
     LOG.info("Validating data in single row is present in: "
           + "FIELD_WITH_NL_REPLACEMENT_HIVE_IMPORT table");
@@ -404,6 +408,27 @@ public class TestHiveImport extends ImportJobTestCase {
       fail("Unable to read files generated from hive");
     } finally {
       br.close();
+    }
+  }
+
+  /**
+   * Test hive drop and replace option validation.
+   */
+  @Test
+  public void testHiveDropAndReplaceOptionValidation() throws ParseException {
+    LOG.info("Testing conflicting Hive delimiter drop/replace options");
+
+    setNumCols(3);
+    String[] moreArgs = { "--"+BaseSqoopTool.HIVE_DELIMS_REPLACEMENT_ARG, " ",
+      "--"+BaseSqoopTool.HIVE_DROP_DELIMS_ARG, };
+
+    ImportTool tool = new ImportTool();
+    try {
+      tool.validateOptions(tool.parseArguments(getArgv(false, moreArgs), null,
+          null, true));
+      fail("Expected InvalidOptionsException");
+    } catch (InvalidOptionsException ex) {
+      /* success */
     }
   }
 

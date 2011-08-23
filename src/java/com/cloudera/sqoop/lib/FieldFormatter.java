@@ -31,7 +31,19 @@ public final class FieldFormatter {
    * @param delimiters
    * @return
    */
-  public static String hiveStringDropDelims(String str, String replacement,
+  public static String hiveStringDropDelims(String str,
+          DelimiterSet delimiters) {
+    return hiveStringReplaceDelims(str, "", delimiters);
+  }
+
+  /**
+   * replace hive delimiters with a user-defined string passed to the
+   * --hive-delims-replacement option.
+   * @param str
+   * @param delimiters
+   * @return
+   */
+  public static String hiveStringReplaceDelims(String str, String replacement,
       DelimiterSet delimiters) {
     String droppedDelims = str.replaceAll("\\n|\\r|\01", replacement);
     return escapeAndEnclose(droppedDelims, delimiters);

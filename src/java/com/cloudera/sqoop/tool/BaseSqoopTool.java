@@ -97,7 +97,8 @@ public abstract class BaseSqoopTool extends SqoopTool {
   public static final String HIVE_TABLE_ARG = "hive-table";
   public static final String HIVE_OVERWRITE_ARG = "hive-overwrite";
   public static final String HIVE_DROP_DELIMS_ARG = "hive-drop-import-delims";
-  public static final String HIVE_DELIMS_REPLACEMENT_ARG = "hive-delims-replacement";
+  public static final String HIVE_DELIMS_REPLACEMENT_ARG =
+          "hive-delims-replacement";
   public static final String HIVE_PARTITION_KEY_ARG = "hive-partition-key";
   public static final String HIVE_PARTITION_VALUE_ARG = "hive-partition-value";
   public static final String CREATE_HIVE_TABLE_ARG =
@@ -736,7 +737,8 @@ public abstract class BaseSqoopTool extends SqoopTool {
     }
 
     if (in.hasOption(HIVE_DELIMS_REPLACEMENT_ARG)) {
-      out.setHiveDelimsReplacement(in.getOptionValue(HIVE_DELIMS_REPLACEMENT_ARG));
+      out.setHiveDelimsReplacement(
+              in.getOptionValue(HIVE_DELIMS_REPLACEMENT_ARG));
     }
 
     if (in.hasOption(HIVE_PARTITION_KEY_ARG)) {
@@ -904,6 +906,12 @@ public abstract class BaseSqoopTool extends SqoopTool {
       throws InvalidOptionsException {
     // Empty; this method is present to maintain API consistency, and
     // is reserved for future constraints on Hive options.
+    if (options.getHiveDelimsReplacement() != null
+            && options.doHiveDropDelims()) {
+      throw new InvalidOptionsException("The " + HIVE_DROP_DELIMS_ARG
+              + " option conflicts with the " + HIVE_DELIMS_REPLACEMENT_ARG
+              + " option." + HELP_STR);
+    }
   }
 
   protected void validateHBaseOptions(SqoopOptions options)
