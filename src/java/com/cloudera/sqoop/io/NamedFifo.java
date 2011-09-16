@@ -59,9 +59,9 @@ public class NamedFifo {
 
   /**
    * Create a named FIFO object with the specified fs permissions.
-   * This depends on the 'mkfifo' system utility existing. (for example,
-   * provided by Linux coreutils). This object will be deleted when
-   * the process exits.
+   * This depends on the 'mknod' or 'mkfifo' (Mac OS X) system utility
+   * existing. (for example, provided by Linux coreutils). This object
+   * will be deleted when the process exits.
    * @throws IOException on failure.
    */
   public void create(int permissions) throws IOException {
@@ -71,7 +71,11 @@ public class NamedFifo {
     String modeStr = Integer.toString(permissions, 8);
 
     // Create the FIFO itself.
-    Shell.execCommand("mkfifo", "-m", "0" + modeStr, filename);
+    if (System.getProperty("os.name").toLowerCase().startsWith("mac")) {
+      Shell.execCommand("mkfifo", "-m", "0" + modeStr, filename);
+    } else {
+      Shell.execCommand("mknod", "--mode=0" + modeStr, filename, "p");
+    }
 
     // Schedule the FIFO to be cleaned up when we exit.
     this.fifoFile.deleteOnExit();
