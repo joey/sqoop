@@ -28,6 +28,22 @@ import org.apache.hadoop.util.Shell;
  */
 public class NamedFifo {
 
+  private static final boolean useMkFifo;
+  static {
+    /** Default to mknod **/
+    String mkFifoPath = "";
+    try {
+      mkFifoPath = Shell.execCommand("which", "mkfifo");
+    } catch (IOException ex) {
+    } finally {
+      if (mkFifoPath.isEmpty()) {
+        useMkFifo = false;
+      } else {
+        useMkFifo = true;
+      }
+    }
+  }
+
   private File fifoFile;
 
   /** Create a named FIFO object at the local fs path given by 'pathname'. */
@@ -71,7 +87,7 @@ public class NamedFifo {
     String modeStr = Integer.toString(permissions, 8);
 
     // Create the FIFO itself.
-    if (System.getProperty("os.name").toLowerCase().startsWith("mac")) {
+    if (useMkFifo) {
       Shell.execCommand("mkfifo", "-m", "0" + modeStr, filename);
     } else {
       Shell.execCommand("mknod", "--mode=0" + modeStr, filename, "p");
