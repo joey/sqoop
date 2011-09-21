@@ -74,10 +74,16 @@ public class NamedFifo {
     String modeStr = Integer.toString(permissions, 8);
 
     // Create the FIFO itself.
-    String output = Shell.execCommand("mknod", "--mode=0" + modeStr, filename, "p");
-    LOG.info("mknod output:\n"+output);
+    try {
+      String output = Shell.execCommand("mknod", "--mode=0" + modeStr, filename, "p");
+      LOG.info("mknod output:\n"+output);
+    } catch (IOException ex) {
+      LOG.info("IO error running mknod: " + ex.getMessage());
+      LOG.debug("IO error running mknod", ex);
+    }
     if (!this.fifoFile.exists()) {
-      output = Shell.execCommand("mkfifo", "-m", "0" + modeStr, filename);
+      LOG.info("mknod failed, falling back to mkfifo");
+      String output = Shell.execCommand("mkfifo", "-m", "0" + modeStr, filename);
       LOG.info("mkfifo output:\n"+output);
     }
 
