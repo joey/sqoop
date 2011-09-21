@@ -22,27 +22,14 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.hadoop.util.Shell;
+import org.apache.log4j.Logger;
 
 /**
  * A named FIFO channel.
  */
 public class NamedFifo {
 
-  private static final boolean useMkFifo;
-  static {
-    /** Default to mknod **/
-    String mkFifoPath = "";
-    try {
-      mkFifoPath = Shell.execCommand("which", "mkfifo");
-    } catch (IOException ex) {
-    } finally {
-      if (mkFifoPath.isEmpty()) {
-        useMkFifo = false;
-      } else {
-        useMkFifo = true;
-      }
-    }
-  }
+  private static final Logger LOG = Logger.getLogger(NamedFifo.class);
 
   private File fifoFile;
 
@@ -87,10 +74,11 @@ public class NamedFifo {
     String modeStr = Integer.toString(permissions, 8);
 
     // Create the FIFO itself.
-    if (useMkFifo) {
-      Shell.execCommand("mkfifo", "-m", "0" + modeStr, filename);
-    } else {
-      Shell.execCommand("mknod", "--mode=0" + modeStr, filename, "p");
+    String output = Shell.execCommand("mknod", "--mode=0" + modeStr, filename, "p");
+    LOG.info("mknod output:\n"+output);
+    if (!this.fifoFile.exists()) {
+      output = Shell.execCommand("mkfifo", "-m", "0" + modeStr, filename);
+      LOG.info("mkfifo output:\n"+output);
     }
 
     // Schedule the FIFO to be cleaned up when we exit.
